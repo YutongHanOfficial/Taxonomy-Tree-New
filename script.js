@@ -1,33 +1,34 @@
-// 1. Enriched Data Structure (Added 'rank' and 'info' for tooltips)
+// 1. Data Structure with Unsplash Images
 const taxonomyData = {
-    name: "Carnivora", rank: "Order", info: "Meat-eating mammals.",
+    name: "Carnivora", rank: "Order", info: "Placental mammals that specialize in eating meat.", img: "https://images.unsplash.com/photo-1590513886561-e0c2f741ba0a?auto=format&fit=crop&w=500&q=80",
     children: [
         {
-            name: "Felidae", rank: "Family", info: "The biological family of cats.",
+            name: "Felidae", rank: "Family", info: "The biological family of cats. Agile predators.", img: "https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?auto=format&fit=crop&w=500&q=80",
             children: [
                 {
-                    name: "Felinae", rank: "Subfamily", info: "Small to medium-sized cats.",
+                    name: "Felinae", rank: "Subfamily", info: "Small to medium-sized cats including cheetahs.", img: "https://images.unsplash.com/photo-153ee71836691-11d2e13292fc?auto=format&fit=crop&w=500&q=80",
                     children: [
-                        { name: "Felis", rank: "Genus", info: "Small cats including the domestic cat.", children: [{ name: "Felis catus", rank: "Species", info: "Domestic cat." }] },
-                        { name: "Puma", rank: "Genus", info: "Cougars and jaguarundis.", children: [{ name: "Puma concolor", rank: "Species", info: "Mountain lion / Cougar." }] }
+                        { name: "Felis catus", rank: "Species", info: "The domestic cat. Highly adaptable.", img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=500&q=80" },
+                        { name: "Puma concolor", rank: "Species", info: "Cougar or Mountain Lion. Ambush predator.", img: "https://images.unsplash.com/photo-1588619623832-6bb0b9e84bb2?auto=format&fit=crop&w=500&q=80" }
                     ]
                 },
                 {
-                    name: "Pantherinae", rank: "Subfamily", info: "The big cats.",
+                    name: "Pantherinae", rank: "Subfamily", info: "The big roaring cats.", img: "https://images.unsplash.com/photo-1504595403659-9088ce801e29?auto=format&fit=crop&w=500&q=80",
                     children: [
-                        { name: "Panthera", rank: "Genus", info: "Lions, tigers, jaguars, leopards.", children: [{ name: "Panthera leo", rank: "Species", info: "Lion." }, { name: "Panthera tigris", rank: "Species", info: "Tiger." }] }
+                        { name: "Panthera leo", rank: "Species", info: "The Lion. Lives in social groups called prides.", img: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?auto=format&fit=crop&w=500&q=80" },
+                        { name: "Panthera tigris", rank: "Species", info: "The Tiger. Largest living cat species.", img: "https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=500&q=80" }
                     ]
                 }
             ]
         },
         {
-            name: "Canidae", rank: "Family", info: "Dogs, wolves, foxes, and jackals.",
+            name: "Canidae", rank: "Family", info: "Dogs, wolves, foxes, and jackals.", img: "https://images.unsplash.com/photo-1536514072410-5019a3c69182?auto=format&fit=crop&w=500&q=80",
             children: [
                 {
-                    name: "Caninae", rank: "Subfamily", info: "The only living subfamily of Canidae.",
+                    name: "Caninae", rank: "Subfamily", info: "The only living subfamily of Canidae.", img: "https://images.unsplash.com/photo-1590424744257-f1be20042738?auto=format&fit=crop&w=500&q=80",
                     children: [
-                        { name: "Canis", rank: "Genus", info: "Wolves, dogs, coyotes.", children: [{ name: "Canis lupus", rank: "Species", info: "Gray wolf." }, { name: "Canis familiaris", rank: "Species", info: "Domestic dog." }] },
-                        { name: "Vulpes", rank: "Genus", info: "True foxes.", children: [{ name: "Vulpes vulpes", rank: "Species", info: "Red fox." }] }
+                        { name: "Canis lupus", rank: "Species", info: "Gray wolf. Apex predator and ancestor of dogs.", img: "https://images.unsplash.com/photo-1560885673-2cdf179e8a75?auto=format&fit=crop&w=500&q=80" },
+                        { name: "Vulpes vulpes", rank: "Species", info: "Red fox. Largest of the true foxes.", img: "https://images.unsplash.com/photo-1516934515560-f4728cc3961c?auto=format&fit=crop&w=500&q=80" }
                     ]
                 }
             ]
@@ -35,196 +36,229 @@ const taxonomyData = {
     ]
 };
 
-// Color scale based on taxonomic rank
-const colorScale = {
-    "Order": "#e11d48",     // Red
-    "Family": "#d946ef",    // Fuchsia
-    "Subfamily": "#8b5cf6", // Purple
-    "Genus": "#3b82f6",     // Blue
-    "Species": "#10b981",   // Green
-    "default": "#64748b"    // Gray
-};
-
+// 2. Setup Variables & Colors
 const width = window.innerWidth;
 const height = window.innerHeight;
-const margin = {top: 20, right: 120, bottom: 20, left: 120};
+const nodeRadius = 8;
 
-// Set up Tooltip
-const tooltip = d3.select("#tooltip");
+const colors = {
+    "Order": "#ff4757",    // Red
+    "Family": "#ff6b81",   // Pink
+    "Subfamily": "#a29bfe",// Purple
+    "Genus": "#74b9ff",    // Blue
+    "Species": "#00d2d3",  // Cyan
+    "default": "#ced6e0"
+};
 
-// Create SVG and Zoom behavior
-const svg = d3.select("#tree-container").append("svg")
-    .attr("width", "100%")
-    .attr("height", "100%")
-    .call(d3.zoom().scaleExtent([0.1, 3]).on("zoom", (event) => {
-        g.attr("transform", event.transform);
-    }));
+// 3. Initialize Canvas & Zoom
+const container = d3.select("#tree-container");
+const svg = container.append("svg")
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .style("width", "100%")
+    .style("height", "100%");
 
-const g = svg.append("g")
-    .attr("transform", `translate(${margin.left},${height/2})`);
+const g = svg.append("g");
 
-const treeMap = d3.tree().nodeSize([60, 250]); // Spacing [vertical, horizontal]
+const zoom = d3.zoom()
+    .scaleExtent([0.2, 4])
+    .on("zoom", (event) => g.attr("transform", event.transform));
+
+svg.call(zoom);
+
+// 4. Setup Tree Hierarchy
+const treeLayout = d3.tree().nodeSize([70, 300]); // [vertical spacing, horizontal spacing]
 const root = d3.hierarchy(taxonomyData);
 
-root.x0 = 0;
-root.y0 = 0;
+// Assign internal IDs and initial positions
+root.descendants().forEach((d, i) => {
+    d.id = i;
+    d.x0 = height / 2;
+    d.y0 = 0;
+    // Store children for toggling
+    d._children = d.children;
+});
 
-let i = 0;
-const duration = 500;
+// Start with root expanded, everything else collapsed
+root.children.forEach(collapseNode);
 
-// Initialize
-update(root);
-centerTree();
+function collapseNode(d) {
+    if (d.children) {
+        d._children = d.children;
+        d._children.forEach(collapseNode);
+        d.children = null;
+    }
+}
 
-// --- UPDATE FUNCTION ---
+// 5. Tooltip Logic
+const tooltip = d3.select("#tooltip");
+function showTooltip(event, d) {
+    d3.select("#tt-title").text(d.data.name);
+    d3.select("#tt-rank").text(d.data.rank || "Unknown");
+    d3.select("#tt-info").text(d.data.info || "No description available.");
+    d3.select("#tt-img").attr("src", d.data.img || "https://images.unsplash.com/photo-1550159930-40066082a4fc?auto=format&fit=crop&w=500&q=80").style("display", d.data.img ? "block" : "none");
+    
+    tooltip.style("opacity", 1)
+           .style("left", (event.pageX) + "px")
+           .style("top", (event.pageY) + "px");
+}
+function hideTooltip() {
+    tooltip.style("opacity", 0);
+}
+
+// 6. Main Core Engine (The Fix)
 function update(source) {
-    const treeData = treeMap(root);
-    const nodes = treeData.descendants();
-    const links = treeData.descendants().slice(1);
+    // Generate new tree layout mapping
+    treeLayout(root);
+    
+    // We now use root.descendants() and root.links() properly
+    const nodes = root.descendants();
+    const links = root.links();
 
-    // --- NODES ---
+    // ---------- NODES ----------
     const node = g.selectAll('g.node')
-        .data(nodes, d => d.id || (d.id = ++i));
+        .data(nodes, d => d.id);
 
     const nodeEnter = node.enter().append('g')
         .attr('class', 'node')
         .attr("transform", d => `translate(${source.y0},${source.x0})`)
         .on('click', (event, d) => {
-            if (d.children) { d._children = d.children; d.children = null; } 
-            else { d.children = d._children; d._children = null; }
+            // Toggle children
+            d.children = d.children ? null : d._children;
             update(d);
         })
-        .on('mouseover', function(event, d) {
-            const nodeData = d.data;
-            tooltip.transition().duration(200).style("opacity", 1);
-            tooltip.html(`
-                <div class="title">${nodeData.name}</div>
-                <div class="rank">${nodeData.rank || 'Unknown Rank'}</div>
-                <div>${nodeData.info || 'No description available.'}</div>
-            `)
-            .style("left", (event.pageX) + "px")
-            .style("top", (event.pageY) + "px");
-        })
-        .on('mouseout', () => tooltip.transition().duration(500).style("opacity", 0));
+        .on('mouseover', showTooltip)
+        .on('mousemove', showTooltip) // Keep it attached to cursor
+        .on('mouseout', hideTooltip);
 
-    // Draw Circles
     nodeEnter.append('circle')
-        .attr('r', 1e-6)
-        .style("fill", d => d._children ? (colorScale[d.data.rank] || colorScale.default) : "#1e293b")
-        .style("stroke", d => colorScale[d.data.rank] || colorScale.default);
+        .attr('r', 1e-6) // Start tiny for animation
+        .style("fill", d => d._children ? (colors[d.data.rank] || colors.default) : "#0f1423")
+        .style("stroke", d => colors[d.data.rank] || colors.default);
 
-    // Draw Text (Name)
     nodeEnter.append('text')
-        .attr("dy", "-0.8em")
-        .attr("x", d => d.children || d._children ? -15 : 15)
-        .attr("text-anchor", d => d.children || d._children ? "end" : "start")
-        .text(d => d.data.name)
-        .style("fill", d => d.highlighted ? "#00f2fe" : "#cbd5e1")
-        .style("font-weight", d => d.highlighted ? "bold" : "normal");
+        .attr("dy", "-1em")
+        .attr("x", d => d._children ? -15 : 15)
+        .attr("text-anchor", d => d._children ? "end" : "start")
+        .text(d => d.data.name);
 
-    // Draw Text (Rank)
     nodeEnter.append('text')
         .attr("class", "rank-label")
-        .attr("dy", "0.8em")
-        .attr("x", d => d.children || d._children ? -15 : 15)
-        .attr("text-anchor", d => d.children || d._children ? "end" : "start")
+        .attr("dy", "1.2em")
+        .attr("x", d => d._children ? -15 : 15)
+        .attr("text-anchor", d => d._children ? "end" : "start")
         .text(d => d.data.rank);
 
+    // Node Update Transitions
     const nodeUpdate = nodeEnter.merge(node);
-
-    nodeUpdate.transition().duration(duration)
+    
+    nodeUpdate.transition().duration(400)
         .attr("transform", d => `translate(${d.y},${d.x})`);
 
     nodeUpdate.select('circle')
-        .attr('r', d => d.highlighted ? 10 : 8)
-        .style("fill", d => d._children ? (colorScale[d.data.rank] || colorScale.default) : "#1e293b")
-        .style("box-shadow", d => d.highlighted ? "0 0 10px white" : "none");
+        .attr('r', d => d.highlighted ? 12 : nodeRadius)
+        .style("fill", d => d._children ? (colors[d.data.rank] || colors.default) : "#0f1423")
+        .style("stroke", d => d.highlighted ? "#00f2fe" : (colors[d.data.rank] || colors.default));
 
-    nodeUpdate.select('text').style("fill", d => d.highlighted ? "#00f2fe" : "#cbd5e1");
+    nodeUpdate.selectAll('text')
+        .style("fill", d => d.highlighted ? "#00f2fe" : "#cbd5e1");
 
-    const nodeExit = node.exit().transition().duration(duration)
+    // Node Exit Transitions
+    const nodeExit = node.exit().transition().duration(400)
         .attr("transform", d => `translate(${source.y},${source.x})`)
         .remove();
 
     nodeExit.select('circle').attr('r', 1e-6);
     nodeExit.select('text').style('fill-opacity', 1e-6);
 
-    // --- LINKS ---
+    // ---------- LINKS ----------
     const link = g.selectAll('path.link')
-        .data(links, d => d.id);
+        .data(links, d => d.target.id);
+
+    const linkGenerator = d3.linkHorizontal()
+        .x(d => d.y)
+        .y(d => d.x);
 
     const linkEnter = link.enter().insert('path', "g")
-        .attr("class", d => d.target.highlighted && d.source.highlighted ? "link highlight" : "link")
+        .attr("class", "link")
         .attr('d', d => {
             const o = {x: source.x0, y: source.y0};
-            return d3.linkHorizontal().x(d => d.y).y(d => d.x)({source: o, target: o});
+            return linkGenerator({source: o, target: o});
         });
 
     const linkUpdate = linkEnter.merge(link);
 
-    linkUpdate.transition().duration(duration)
+    linkUpdate.transition().duration(400)
         .attr("class", d => d.target.highlighted && d.source.highlighted ? "link highlight" : "link")
-        .attr('d', d3.linkHorizontal().x(d => d.y).y(d => d.x));
+        .attr('d', linkGenerator);
 
-    link.exit().transition().duration(duration)
+    link.exit().transition().duration(400)
         .attr('d', d => {
             const o = {x: source.x, y: source.y};
-            return d3.linkHorizontal().x(d => d.y).y(d => d.x)({source: o, target: o});
-        }).remove();
+            return linkGenerator({source: o, target: o});
+        })
+        .remove();
 
-    nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+    // Store positions for next animation
+    nodes.forEach(d => {
+        d.x0 = d.x;
+        d.y0 = d.y;
+    });
 }
 
-// --- CONTROLS LOGIC ---
+// 7. Initial Render & Centering
+update(root);
+centerTree();
 
-// Center Tree
 function centerTree() {
-    const t = d3.zoomIdentity.translate(margin.left, height / 2).scale(0.8);
-    svg.transition().duration(750).call(d3.zoom().transform, t);
+    // Centers the root node nicely on the left side of the screen
+    const t = d3.zoomIdentity.translate(150, height / 2).scale(0.8);
+    svg.transition().duration(750).call(zoom.transform, t);
 }
+
+// 8. UI Controls
 document.getElementById('btn-recenter').addEventListener('click', centerTree);
 
-// Expand All
 document.getElementById('btn-expand').addEventListener('click', () => {
-    root.each(d => { if (d._children) { d.children = d._children; d._children = null; } });
+    root.descendants().forEach(d => {
+        if (d._children) {
+            d.children = d._children;
+        }
+    });
     update(root);
 });
 
-// Collapse All
 document.getElementById('btn-collapse').addEventListener('click', () => {
-    root.each(d => {
-        if (d.depth > 0 && d.children) { d._children = d.children; d.children = null; }
-    });
+    root.children.forEach(collapseNode);
     update(root);
     centerTree();
 });
 
-// Search Engine
+// 9. Powerful Search Engine
 document.getElementById('search-input').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
+    const term = e.target.value.toLowerCase();
     
-    // Reset highlights
-    root.each(d => { d.highlighted = false; });
+    // Clear previous highlights
+    root.descendants().forEach(d => d.highlighted = false);
 
-    if (searchTerm.length < 2) {
+    if (term.length < 2) {
         update(root);
         return;
     }
 
-    // Find and highlight matching nodes and their parents
-    root.each(d => {
-        if (d.data.name.toLowerCase().includes(searchTerm) || (d.data.rank && d.data.rank.toLowerCase().includes(searchTerm))) {
+    // Find matches and trace path to root
+    root.descendants().forEach(d => {
+        if (d.data.name.toLowerCase().includes(term) || (d.data.rank && d.data.rank.toLowerCase().includes(term))) {
             let current = d;
             while (current) {
                 current.highlighted = true;
-                // Auto-expand parents
+                // Force expand parents so the path is visible
                 if (current._children) {
                     current.children = current._children;
-                    current._children = null;
                 }
                 current = current.parent;
             }
         }
     });
+    
     update(root);
 });
