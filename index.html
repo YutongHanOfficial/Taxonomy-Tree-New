@@ -3,32 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Taxonomy Explorer</title>
-    <!-- Modern font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Ultimate Taxonomy Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Load D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
 
-    <!-- Floating Glassmorphism UI Panel -->
+    <!-- Glassmorphism Control Panel -->
     <div id="ui-panel">
-        <h2>Taxonomy Explorer</h2>
+        <h2>DNA / Taxonomy Web</h2>
         <div class="controls">
-            <input type="text" id="search-input" placeholder="Search species or rank...">
+            <input type="text" id="search-input" placeholder="Search species, rank, or name...">
             <div class="button-group">
                 <button id="btn-recenter">🎯 Recenter</button>
-                <button id="btn-expand">➕ Expand All</button>
-                <button id="btn-collapse">➖ Collapse All</button>
+                <button id="btn-expand">🌊 Expand All</button>
+                <button id="btn-collapse">🌱 Collapse All</button>
             </div>
         </div>
     </div>
 
-    <!-- Hidden Tooltip -->
-    <div id="tooltip" class="tooltip"></div>
+    <!-- Dynamic Tooltip -->
+    <div id="tooltip" class="tooltip">
+        <img id="tt-img" src="" alt="">
+        <div class="tt-content">
+            <div id="tt-title" class="title"></div>
+            <div id="tt-rank" class="rank"></div>
+            <div id="tt-info" class="info"></div>
+        </div>
+    </div>
 
-    <!-- The Tree Canvas -->
+    <!-- Tree Canvas -->
     <div id="tree-container"></div>
 
     <script src="script.js"></script>
